@@ -1,7 +1,9 @@
 import React, { useState ,useEffect} from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { AiOutlineExclamationCircle, AiOutlineFileText, AiOutlineCheckCircle } from 'react-icons/ai'; // Import icons
+import { AiOutlineExclamationCircle, AiOutlineFileText, AiOutlineCheckCircle } from 'react-icons/ai';
 import { Tooltip } from 'bootstrap';
+import api from "../api/axios.jsx";
+import './Driver-styles.css'
 
 const DriverAppeal = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +13,10 @@ const DriverAppeal = () => {
     evidence: null,
   });
 
+  const token = localStorage.getItem('token');
+
+  const [fines, setFines] = useState([]);
+
   const appealStatus = [
     { date: '2025-02-23', status: 'Pending' },
     { date: '2024-08-01', status: 'In Review' },
@@ -18,6 +24,31 @@ const DriverAppeal = () => {
     { date: '2023-04-10', status: 'Resolved' },
     { date: '2022-09-06', status: 'Resolved' },
   ];
+
+  const fetchFines = async () => {
+    try {
+      const response = await api.get('/get-all-unpaid-fines', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      // Ensure it's an array
+      if (Array.isArray(response.data)) {
+        setFines(response.data);
+      } else if (Array.isArray(response.data.fines)) {
+        setFines(response.data.fines);
+      } else {
+        console.error("Unexpected fine data format:", response.data);
+        setFines([]);
+      }
+    } catch (error) {
+      console.error("Error fetching fines:", error.response?.data || error.message);
+      setFines([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchFines();
+  }, []);
 
   useEffect(() => {
     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
@@ -41,7 +72,7 @@ const DriverAppeal = () => {
   };
 
   return (
-    <div className="container-fluid py-5" style={{ backgroundColor: '#a5c8f7', minHeight: '100vh' }}>
+    <div className="container-fluid py-5 w-75 mb-5" style={{ backgroundColor: '#a5c8f7', minHeight: '80vh'}}>
       <div className="container d-flex flex-column flex-md-row gap-4">
         {/* Appeal Form */}
         <div className="bg-white p-4 rounded-4 shadow-sm flex-grow-1">
@@ -54,14 +85,18 @@ const DriverAppeal = () => {
 
             <div className="mb-3">
               <label className="form-label">Issue Type :</label>
-              <input
-                type="text"
-                className="form-control"
-                name="issueType"
-                value={formData.issueType}
-                onChange={handleChange}
-                required
-              />
+              <select
+                  className="form-control"
+                  name="issueType"
+                  value={formData.issueType}
+                  onChange={handleChange}
+                  required
+              >
+                <option value="" disabled>-- Select a Fine --</option>
+                {fines.map((item) => (
+                    <option key={item.id} value={item.id}>{item.name}</option>
+                ))}
+              </select>
             </div>
 
             <div className="mb-3">
@@ -75,19 +110,19 @@ const DriverAppeal = () => {
               ></textarea>
             </div>
 
-            <div className="mb-4">
-              <label className="form-label d-block">Upload Evidence :</label>
-              <input
-                type="file"
-                className="form-control w-auto d-inline"
-                name="evidence"
-                onChange={handleChange}
-              />
-            </div>
+            {/*<div className="mb-4">*/}
+            {/*  <label className="form-label d-block">Upload Evidence :</label>*/}
+            {/*  <input*/}
+            {/*    type="file"*/}
+            {/*    className="form-control w-auto d-inline"*/}
+            {/*    name="evidence"*/}
+            {/*    onChange={handleChange}*/}
+            {/*  />*/}
+            {/*</div>*/}
 
             <div className="d-flex gap-3">
-              <button type="submit" className="btn btn-primary px-4">Submit</button>
-              <button type="button" className="btn btn-secondary px-4" onClick={() => setFormData({ fineId: '', issueType: '', description: '', evidence: null })}>
+              <button type="submit" className="btn btn-primary px-4 w-50">Submit</button>
+              <button type="button" className="btn btn-secondary px-4 w-50" onClick={() => setFormData({ fineId: '', issueType: '', description: '', evidence: null })}>
                 Cancel
               </button>
             </div>

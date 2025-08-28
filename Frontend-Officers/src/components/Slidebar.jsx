@@ -77,7 +77,7 @@ function Slidebar({ messages, role }) {
 
   return (
     <>
-    <nav className="sidebar min-h-screen">
+    <nav className="sidebar min-h-screen pb-5">
   {sidebarOptions[role]?.map((item, index) => (
     <div key={index} className="sidebar-links mb-2">
     <Link to={item.link}>

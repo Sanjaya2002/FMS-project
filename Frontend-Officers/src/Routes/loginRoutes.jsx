@@ -13,8 +13,6 @@ function loginRoutes() {
       <Routes>
           <Route path="/" element={< PoliceLoginPage/>}/>
           <Route path="/loginPolice" element={< PoliceLoginPage/>}/>
-          
-
       </Routes>
     );
   }

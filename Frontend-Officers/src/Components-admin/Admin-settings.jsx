@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {Link} from "react-router-dom";
 import { FaUser, FaBell, FaQuestionCircle, FaSignOutAlt, FaTrash, FaFacebook, FaInstagram, FaMailBulk, FaFilePdf } from "react-icons/fa";
 import { FaWhatsapp } from "react-icons/fa6";
-import "../Components-officer/officer-styles.css";
+import "../Components-officer/Officer-styles.css";
 import { Form } from "react-bootstrap";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -10,50 +10,97 @@ import api from "../api/axios.jsx";
 import {useNavigate} from "react-router-dom";
 import SettingItem from "../components/SettingItem.jsx";
 import HelpItem from "../components/HelpItem.jsx";
-
-// Add these error handling functions at the top
-const getToken = () => {
-    try {
-        const tokenString = localStorage.getItem('token');
-        if (tokenString && !tokenString.startsWith('{') && !tokenString.startsWith('[')) {
-            return tokenString;
-        }
-        return tokenString ? JSON.parse(tokenString) : null;
-    } catch (error) {
-        console.error('Error parsing token:', error);
-        return null;
-    }
-};
-
-const getUser = () => {
-    try {
-        const userString = localStorage.getItem('user');
-        if (userString && !userString.startsWith('{') && !userString.startsWith('[')) {
-            return { username: userString };
-        }
-        return userString ? JSON.parse(userString) : null;
-    } catch (error) {
-        console.error('Error parsing user:', error);
-        return null;
-    }
-};
-
-const token = getToken();
-const user = getUser();
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function AdminSettings() {
-    
-  
     const navigate = useNavigate();
     const [submittedData, setSubmittedData] = useState(null);
     const [activeSection, setActiveSection] = useState(null);
     const [accountSection, setAccountSection] = useState(null);
-    const [isVerified, setIsVerified] = useState(user?.email_verified_at?.data || null);
-    useEffect(() => {
-        if (!user || !token) {
-            navigate('/login');
+    const [isVerified, setIsVerified] = useState(false);
+    const [officerData, setOfficerData] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    const getToken = () => {
+        try {
+            const tokenString = localStorage.getItem('token');
+            if (tokenString && !tokenString.startsWith('{') && !tokenString.startsWith('[')) {
+                return tokenString;
+            }
+            return tokenString ? JSON.parse(tokenString) : null;
+        } catch (error) {
+            console.error('Error parsing token:', error);
+            return null;
         }
-    }, [user, token, navigate]);
+    };
+    const token = getToken();
+
+    useEffect(() => {
+        if (!token) {
+            navigate('/loginPolice');
+        }
+    }, [token, navigate]);
+
+    useEffect(() => {
+        if (activeSection === null) {
+            setAccountSection(null);
+        }
+    }, [activeSection]);
+
+
+
+    const fetchUsernameEmail = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get('/police/get-username-email',
+                {headers: {'Authorization':`Bearer ${token}`}
+                }
+            );
+            if (response.status === 200) {
+                const username = response.data.user_name;
+                const email = response.data.email;
+                setOfficerData({
+                    username,
+                    email
+                })
+            } else {
+                console.log("Failed to fetch username email");
+            }
+        } catch (error) {
+            console.error('Username Email fetching failed:', error.response?.data || error.message);
+        }
+        finally {
+            setLoading(false);
+        }
+    }
+
+
+
+    useEffect(() => {
+        fetchUsernameEmail();
+    }, []);
+
+
+    useEffect(()=>{
+        const emailVerification = async () => {
+            try{
+                const response = await api.get('/police/is-email-verified',
+                    {
+                        headers:{'Authorization':`Bearer ${token}`}
+                    });
+                if(response.status === 200){
+                    const verification = response.data;
+                    setIsVerified(verification);
+                }
+            }
+            catch(err){
+                console.error('Error parsing email verification:', err);
+            }
+        }
+        emailVerification();
+    },[])
+
+
     const Logout = async () => {
         try {
             const response = await api.post('/police/logout', {
@@ -63,6 +110,7 @@ function AdminSettings() {
             })
             if (response.status === 200) {
                 alert("You are Logout!");
+                navigate('/loginPolice');
             }
         }
         catch (error) {
@@ -80,6 +128,7 @@ function AdminSettings() {
             })
             if (response.status === 200) {
                 alert("You are Logout From All Devices!");
+                navigate('/loginPolice');
             }
         }
         catch (error) {
@@ -116,6 +165,7 @@ function AdminSettings() {
             })
             if (response.status === 200) {
                 alert("Username changed successfully!");
+                window.location.reload();
             }
             else {
                 alert("Invalid Input!");
@@ -139,6 +189,7 @@ function AdminSettings() {
             })
             if (response.status === 200) {
                 alert("Password changed successfully!");
+                window.location.reload();
             }
         }
         catch (error) {
@@ -160,6 +211,7 @@ function AdminSettings() {
 
             if (response.status === 200) {
                 alert("Account Verified Successfully!");
+                window.location.reload();
             } else {
                 alert("Invalid OTP!");
             }
@@ -351,11 +403,7 @@ function AdminSettings() {
         )
     };
 
-    useEffect(() => {
-        if (activeSection === null) {
-            setAccountSection(null);
-        }
-    }, [activeSection]);
+
 
     return (
         <div className="fines-list mt-5">
@@ -403,7 +451,7 @@ function AdminSettings() {
                                           className="info-value d-flex w-100 text-decoration-none text-black opacity-75"
                                           onClick={() => setAccountSection("change_username")}
                                           style={{ cursor: 'pointer' }}>
-                                        <div className="d-flex justify-content-start">{user?.username || 'No username'}</div>
+                                        <div className="d-flex justify-content-start">{officerData.username || 'No username'}</div>
                                         <div className="d-flex justify-content-end me-4 fs-5">&gt;</div>
                                     </Link>
                                 </div>
@@ -422,10 +470,11 @@ function AdminSettings() {
                                         <div
                                             className="info-value d-flex w-100 text-decoration-none text-black opacity-75">
                                             <div className="d-flex justify-content-start">
-                                                {user?.email ?
-                                                    user.email.replace(/^(.{5})(.*)(@.*)$/, (_, start, middle, domain) =>
-                                                        start + '*'.repeat(middle.length) + domain
-                                                    ) : 'No email available'}
+                                                {/*{user?.email ?*/}
+                                                {/*    user.email.replace(/^(.{5})(.*)(@.*)$/, (_, start, middle, domain) =>*/}
+                                                {/*        start + '*'.repeat(middle.length) + domain*/}
+                                                {/*    ) : 'No email available'}*/}
+                                                {officerData.email || 'No email available'}
                                             </div>
                                             <div
                                                 className="d-flex justify-content-center text-success">Verified &#x2705;</div>
@@ -435,10 +484,11 @@ function AdminSettings() {
                                         <Link to="" className="info-value d-flex w-100 text-decoration-none text-black opacity-75"
                                               onClick={() => setAccountSection("verify_email")}>
                                             <div className="d-flex justify-content-start">
-                                                {user?.email ?
-                                                    user.email.replace(/^(.{5})(.*)(@.*)$/, (_, start, middle, domain) =>
-                                                        start + '*'.repeat(middle.length) + domain
-                                                    ) : 'No email available'}
+                                                {/*{user?.email ?*/}
+                                                {/*    user.email.replace(/^(.{5})(.*)(@.*)$/, (_, start, middle, domain) =>*/}
+                                                {/*        start + '*'.repeat(middle.length) + domain*/}
+                                                {/*    ) : 'No email available'}*/}
+                                                {officerData.email || 'No email available'}
                                             </div>
                                             <div className="d-flex justify-content-center text-danger">Not
                                                 Verified &#x274C;</div>
