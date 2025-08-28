@@ -197,6 +197,10 @@ label:hover .overlay-hover {
     z-index: 1;
 }
 
+.form-control{
+    width: 100% !important;
+}
+
 @media only screen and (max-device-width: 700px) {
     .fines-list{
         width: 340px !important;
