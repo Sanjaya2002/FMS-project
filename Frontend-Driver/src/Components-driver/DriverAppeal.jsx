@@ -80,21 +80,28 @@ const DriverAppeal = () => {
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
               <label className="form-label">Fine ID :</label>
-              <input type="text" className="form-control" name="fineId" value={formData.fineId} onChange={handleChange} required/>
+              <input
+                type="text"
+                className="form-control"
+                name="fineId"
+                value={formData.fineId}
+                onChange={handleChange}
+                required
+              />
             </div>
 
             <div className="mb-3">
               <label className="form-label">Issue Type :</label>
               <select
-                  className="form-control"
-                  name="issueType"
-                  value={formData.issueType}
-                  onChange={handleChange}
-                  required
+                className="form-select"  
+                name="issueType"
+                value={formData.issueType}
+                onChange={handleChange}
+                required
               >
                 <option value="" disabled>-- Select a Fine --</option>
                 {fines.map((item) => (
-                    <option key={item.id} value={item.id}>{item.name}</option>
+                  <option key={item.id} value={item.id}>{item.name}</option>
                 ))}
               </select>
             </div>
@@ -110,71 +117,90 @@ const DriverAppeal = () => {
               ></textarea>
             </div>
 
-            {/*<div className="mb-4">*/}
-            {/*  <label className="form-label d-block">Upload Evidence :</label>*/}
-            {/*  <input*/}
-            {/*    type="file"*/}
-            {/*    className="form-control w-auto d-inline"*/}
-            {/*    name="evidence"*/}
-            {/*    onChange={handleChange}*/}
-            {/*  />*/}
-            {/*</div>*/}
+            {/* If you want to add file upload back later */}
+            {/*<div className="mb-3">
+              <label className="form-label d-block">Upload Evidence :</label>
+              <input
+                type="file"
+                className="form-control"
+                name="evidence"
+                onChange={handleChange}
+              />
+            </div>*/}
 
-            <div className="d-flex gap-3">
-              <button type="submit" className="btn btn-primary px-4 w-50">Submit</button>
-              <button type="button" className="btn btn-secondary px-4 w-50" onClick={() => setFormData({ fineId: '', issueType: '', description: '', evidence: null })}>
+            <div className="d-flex flex-column flex-md-row gap-3">
+              <button type="submit" className="btn btn-primary w-100 w-md-50 px-4">
+                Submit
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary w-100 w-md-50 px-4"
+                onClick={() => setFormData({ fineId: '', issueType: '', description: '', evidence: null })}
+              >
                 Cancel
               </button>
             </div>
           </form>
         </div>
 
+
         {/* Appeal Status */}
-        <div className="bg-white p-4 rounded-4 shadow-sm" style={{ width: '300px', maxHeight: '500px', overflowY: 'auto' }}>
-          <h5 className="fw-semibold mb-3 border-bottom pb-2">Appeal Status</h5>
-          {appealStatus.map((item, index) => {
-            const dateObj = new Date(item.date);
-            const day = String(dateObj.getDate()).padStart(2, '0');
-            const month = dateObj.toLocaleString('default', { month: 'short' }).toUpperCase();
-            const year = dateObj.getFullYear();
+        <div
+  className="bg-white p-4 rounded-4 shadow-sm"
+  style={{ maxHeight: '500px', overflowY: 'auto', width: '100%', maxWidth: '400px' }}
+>
+  <h5 className="fw-semibold mb-3 border-bottom pb-2">Appeal Status</h5>
 
-            let statusColor = 'text-warning';
-            let Icon = AiOutlineExclamationCircle;
-            if (item.status === 'Resolved') {
-              statusColor = 'text-success';
-              Icon = AiOutlineCheckCircle; // Resolved status icon
-            } else if (item.status === 'In Review') {
-              statusColor = 'text-primary';
-              Icon = AiOutlineFileText; // In Review status icon
-            }
+  {appealStatus.map((item, index) => {
+    const dateObj = new Date(item.date);
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    const month = dateObj.toLocaleString('default', { month: 'short' }).toUpperCase();
+    const year = dateObj.getFullYear();
 
-            return (
-              <div key={index} className="d-flex align-items-center mb-4">
-                <div className="text-center me-3">
-                  <h4 className="mb-0 fw-bold">{day}</h4>
-                  <small className="d-block">{month}</small>
-                  <small className="d-block">{year}</small>
-                </div>
-                <div className="me-2">
-                  <span
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="top"
-                    title={`Fine ID: ${item.fineId}\nViolation: ${item.violation}`}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    ⋮
-                  </span>
-                </div>
-        <div className="flex-grow-1 d-flex align-items-center">
-                  <Icon className="me-2" size={20} />
-                </div>
-                <div className="flex-grow-1">
-                  <span className={`fw-semibold ${statusColor}`}>{item.status}</span>
-                </div>
-              </div>
-            );
-          })}
+    let statusColor = 'text-warning';
+    let Icon = AiOutlineExclamationCircle;
+    if (item.status === 'Resolved') {
+      statusColor = 'text-success';
+      Icon = AiOutlineCheckCircle;
+    } else if (item.status === 'In Review') {
+      statusColor = 'text-primary';
+      Icon = AiOutlineFileText;
+    }
+
+    return (
+      <div
+        key={index}
+        className="d-flex flex-column flex-sm-row align-items-sm-center mb-4"
+      >
+        {/* Date */}
+        <div className="text-center me-sm-3 mb-2 mb-sm-0">
+          <h4 className="mb-0 fw-bold">{day}</h4>
+          <small className="d-block">{month}</small>
+          <small className="d-block">{year}</small>
         </div>
+
+        {/* Tooltip Icon */}
+        <div className="me-2 mb-2 mb-sm-0">
+          <span
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title={`Fine ID: ${item.fineId}\nViolation: ${item.violation}`}
+            style={{ cursor: 'pointer' }}
+          >
+            ⋮
+          </span>
+        </div>
+
+        {/* Status Icon and Text */}
+        <div className="d-flex align-items-center flex-grow-1 mb-2 mb-sm-0">
+          <Icon className="me-2" size={20} />
+          <span className={`fw-semibold ${statusColor}`}>{item.status}</span>
+        </div>
+      </div>
+    );
+  })}
+</div>
+
       </div>
     </div>
   );
