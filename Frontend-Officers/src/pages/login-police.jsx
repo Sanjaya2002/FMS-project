@@ -89,7 +89,6 @@ const LoginPolice = () => {
                     localStorage.setItem("role", role);
                     localStorage.setItem('token', token);
                     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-                    // localStorage.setItem('user', JSON.stringify(user));
                     switch (role) {
                         case "admin":
                             navigate("/AdminOverview");

@@ -64,7 +64,7 @@ function DriverMyFines() {
                     </li>
                     {notifications.length === 0 && !loading ? (
                         <li className="list-group-item text-center text-muted">
-                            No fines issued in the last 30 days.
+                            No fines issued in the last 14 days.
                         </li>
                     ) : (
                         notifications.map((item) => (
